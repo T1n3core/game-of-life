@@ -1,13 +1,15 @@
+#include "raylib.h"
+
 int main(int argc, char *argv[]) {
-    InitWindow(800, 600, "My Raylib Window");
+  InitWindow(800, 600, "My Raylib Window");
 
-    while (!WindowShouldClose()) {
-        BeginDrawing();
-        ClearBackground(RAYWHITE);
-        EndDrawing();
-    }
+  while (!WindowShouldClose()) {
+    BeginDrawing();
+    ClearBackground(RAYWHITE);
+    EndDrawing();
+  }
 
-    CloseWindow();
+  CloseWindow();
 
-    return 0;
+  return 0;
 }

@@ -3,7 +3,7 @@ project(game-of-life C)
 
 set(CMAKE_C_STANDARD 99)
 
-add_subdirectory(raylib)
+add_subdirectory(lib/raylib)
 
 add_executable(game-of-life src/main.c)
 
