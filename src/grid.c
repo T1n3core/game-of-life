@@ -1,59 +1,65 @@
-#include <stdint.h>
-#include <stdlib.h>
-#include <stddef.h>
-#include <errno.h>
+#include "../include/grid.h"
 
-#define GRID_DEFAULT_SIZE 64
+// returns -1 if index is out of bounds
+int grid_index(const grid *const g, int i, int j) {
+  if (i >= g->size || j >= g->size)
+    return -1;
 
-typedef struct {
-    uint8_t **data;
-    size_t rows;
-    size_t cols;
-} grid;
+  return i * g->size + j;
+}
 
 grid grid_create() {
-    grid g = {NULL, 0, 0};
+  uint8_t *data =
+      malloc(GRID_DEFAULT_SIZE * GRID_DEFAULT_SIZE * sizeof(uint8_t));
 
-    size_t rows = GRID_DEFAULT_SIZE;
-    size_t cols = GRID_DEFAULT_SIZE;
+  if (!data) {
+    errno = ENOMEM;
+    return (grid){NULL, 0};
+  }
 
-    uint8_t **data = malloc(rows * sizeof(uint8_t *));
-
-    if (!data) {
-        errno = ENOMEM;
-        return g;
-    }
-
-    for (int i = 0; i < rows; i++) {
-        data[i] = malloc(cols * sizeof(uint8_t));
-
-        if (!data[i]) {
-            errno = ENOMEM;
-            return g;
-        }
-    }
-
-    g.data = data;
-    g.rows = rows;
-    g.cols = cols;
-
-    return g;
+  return (grid){data, GRID_DEFAULT_SIZE * GRID_DEFAULT_SIZE};
 }
 
-void grid_init(grid *g) {
-    for (int i = 0; i < g->rows; i++) {
-        for (int j = 0; j < g->cols; j++) {
-            g->data[i][j] = 0;
-        }
+void grid_init(grid *const g) {
+  for (int i = 0; i < g->size; i++) {
+    for (int j = 0; j < g->size; j++) {
+      g->data[grid_index(g, i, j)] = 0;
     }
+  }
 }
 
-void grid_destroy(grid *g) {
-    for (int i = 0; i < g->rows; i++) {
-        free(g->data[i]);
-    }
+void grid_resize(grid *const g) {
+  uint8_t *data =
+      realloc(g->data, g->size * GRID_RESIZE_FACTOR * sizeof(uint8_t));
 
-    free(g->data);
-    g->rows = 0;
-    g->cols = 0;
+  if (!data)
+    return;
+
+  g->data = data;
+  g->size *= GRID_RESIZE_FACTOR;
+}
+
+// returns 0 for off, 1 for on and 2 for error
+uint8_t grid_check(const grid *const g, int i, int j) {
+  int idx = grid_index(g, i, j);
+
+  if (idx == -1)
+    return 2;
+
+  return (g->data[idx]) ? 1 : 0;
+}
+
+// if the index is out of bounds nothing happens
+void grid_flip(grid *const g, int i, int j) {
+  int idx = grid_index(g, i, j);
+
+  if (idx == -1)
+    return;
+
+  g->data[idx] = (g->data[idx] == 0) ? 1 : 0;
+}
+
+void grid_destroy(grid *const g) {
+  free(g->data);
+  g->size = 0;
 }
